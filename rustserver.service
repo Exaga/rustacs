@@ -1,0 +1,44 @@
+[Unit]
+Description=Rust Dedicated Server
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=infinity
+StartLimitBurst=19
+
+[Service]
+Environment=SteamAppId=258550
+Environment=LD_LIBRARY_PATH=/home/rust/rustserver
+EnvironmentFile=/home/rust/.rustacs/.rustserver.env
+Type=simple
+TimeoutSec=300
+Restart=on-failure
+RestartSec=20s
+KillSignal=SIGINT
+User=rust
+Group=rust
+WorkingDirectory=/home/rust/rustserver
+ExecStartPre=/usr/games/steamcmd +@sSteamCmdForcePlatformType linux +force_install_dir /home/rust/rustserver +login anonymous +app_update 258550 +quit
+ExecStart=/home/rust/rustserver/RustDedicated -batchmode \
+  +server.ip ${RUST_SERVER_IP} \
+  +server.port ${RUST_SERVER_PORT} \
+  +server.queryport ${RUST_SERVER_QUERYPORT} \
+  +server.level "${RUST_SERVER_LEVEL}" \
+  +server.identity ${RUST_SERVER_ID} \
+  +server.hostname "${RUST_SERVER_HOSTNAME}" \
+  +server.description "Your RUSTACS RustDedicated Server Description" \
+  +server.seed ${RUST_SERVER_SEED} \
+  +server.worldsize ${RUST_SERVER_WORLDSIZE} \
+  +server.maxplayers ${RUST_SERVER_MAXPLAYERS} \
+  +server.tutorialEnabled ${RUST_SERVER_TUTORIAL} \
+  +server.tags "${RUST_SERVER_TAGS}" \
+  +server.saveinterval ${RUST_SERVER_SAVEINTERVAL} \
+  +server.logoimage "https://your-domain.com/image/rust_server_icon.png" \
+  +server.headerimage "https://your-domain.com/image/rust_server_headerimage.jpg" \
+  +server.url "https://your-domain.com/" \
+  +rcon.port ${RUST_RCON_PORT} \
+  +rcon.password "${RUST_RCON_PASSWORD}" \
+  +rcon.web ${RUST_RCON_WEB} \
+  -logfile "${RUST_LOGDIR}/${RUST_SERVER_LOGFILE}.log"
+
+[Install]
+WantedBy=multi-user.target
