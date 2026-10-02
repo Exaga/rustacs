@@ -26,6 +26,7 @@ RUSTACS is released under the [MIT License](LICENSE).
 
 ## Contents
 
+- [Prerequisites](#Prerequisites)
 - [Download RUSTACS](#download-rustacs)
 - [What RUSTACS contains](#what-rustacs-contains)
 - [Requirements](#requirements)
@@ -75,7 +76,7 @@ RUSTACS is released under the [MIT License](LICENSE).
 
 ## Prerequisites
 
-Debain/Ubuntu systems:   
+Debian/Ubuntu systems:   
 You should download and install the following packages to ensure RUSTACS
 runs without any issues on your system:
 
@@ -138,10 +139,6 @@ The tools themselves require:
 - Standard Linux utilities used by the scripts, including `tar`, `xz`, `awk`,
   `find`, `stat`, `cp`, `mv`, `chown`, `cmp` and `od`.
 
-The supplied `rustserver.service` also uses `ts` when writing the RustDedicated
-log. Make sure the command exists on the system before expecting that service
-unit to work unchanged.
-
 ## Installation
 
 Where you install the RUSTACS files is your prerogative. This README uses the
@@ -167,13 +164,6 @@ sudo mkdir -p /home/rust/.rustacs
 sudo mkdir -p /home/rust/bin
 sudo mkdir -p /home/rust/backups
 sudo mkdir -p /home/rust/logs
-```
-
-Install the Python 3 `websockets` module required by `rustacs` using the Python
-package method appropriate for your system. The direct Python command is:
-
-```bash
-python3 -m pip install websockets
 ```
 
 Copy `rustacs` and the Bash tools:
@@ -808,11 +798,11 @@ indefinitely. It checks the active log's raw byte size against
 `RUST_SERVER_MAX_LOGFILE` from the dot-env file. That setting is expressed in
 MiB.
 
-The active log filename is built from `RUST_SERVER_HOSTNAME` beneath
-`RUST_LOGDIR`:
+The active log filename is built from RUST_SERVER_LOGFILE beneath
+RUST_LOGDIR:
 
 ```text
-<RUST_SERVER_HOSTNAME>-rustserver.log
+<RUST_SERVER_LOGFILE>.log
 ```
 
 If the log doesn't exist, or hasn't reached the configured size, the script has
@@ -921,7 +911,7 @@ ${RUST_LOGDIR}/rustservermod.log
 `rustserver.service` is the supplied systemd service unit for RustDedicated. It
 isn't just a wrapper around the executable: it defines the account,
 RustDedicated working directory, update step, restart behaviour, startup
-arguments and logging pipeline used by the supplied RUSTACS layout.
+arguments and logging used by the supplied RUSTACS layout.
 
 The supplied service unit loads:
 
@@ -983,9 +973,6 @@ The supplied service unit also contains project-specific server description,
 image and URL values. Read the unit before using it on your own public server
 and change those values to your own. Don't accidentally publish somebody
 else's server identity because you skipped reading the file.
-
-RustDedicated's output is piped through `tee`/`ts` into the Rust server log
-beneath `/home/rust/logs/` in the supplied layout.
 
 The unit is configured to restart RustDedicated on failure, with a delay between
 restart attempts. A deliberate service stop is still a deliberate stop.
