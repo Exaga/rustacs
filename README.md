@@ -19,7 +19,7 @@ In this document:
 
 Upper-case **RUSTACS** is the umbrella project name and its associated files.  
 Lower-case `rustacs` is the Python 3 command-line tool that comes with it.  
-They're not the same thing. So, in this document, where you see:
+They're not the same thing. So, where you see:
 
 - **RUSTACS** - it's the name of the project and related files.
 - `rustacs` - it's referring to the Python 3 command-line tool.
