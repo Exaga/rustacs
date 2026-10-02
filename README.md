@@ -9,6 +9,10 @@ service unit, CLI tool, and the Bash scripts use the same values. That keeps
 the important environment variables in one place instead of repeating them 
 across multiple scripts.
 
+**NOTE**: [Rust](https://rust.facepunch.com) is a multiplayer survival video 
+game by [Facepunch Studios](https://facepunch.com/). Not to be confused with 
+the Rust programming language. 
+
 ### NOTES:
 
 In this document:
