@@ -4,11 +4,10 @@
 #
 # Automated transactional backup script for Rust server
 #
-# 2026-09-23 - v1.0.1   [release version]
-#
 # This script performs a backup of specific Rust server world state data 
-# files and creates a xz archive - saved to a backup directory. It sources
-# a dot-env file to load settings and path variables. It uses rustacs to 
+# files and creates a xz archive - saved to a backup directory. By default it
+# sources /home/rust/.rustacs/.rustserver.env, or a specific RustDedicated
+# server dot-env file can be selected with --server <dot-env>. It uses rustacs to 
 # output server maintenance notices on a 30 minute countdown to apprise any
 # online players of the scheduled Rust server shutdown and restart. If the 
 # Rust server is inactive it skips to the backup process without any alert 
@@ -17,9 +16,10 @@
 #
 ### IMPORTANT NOTES:
 #
-# The dot-env (.rustserver.env) file and rustacs (Python3) wrapper script
-# are prerequisites for this script to run. Both need to be present on the
-# system - rustacs must have the correct permissions beforehand.
+# A RustDedicated server dot-env file and rustacs (Python3) wrapper script
+# are prerequisites for this script to run. If --server is not specified,
+# /home/rust/.rustacs/.rustserver.env is used. rustacs must have the correct
+# permissions beforehand.
 #
 ### USAGE:
 #
@@ -31,6 +31,12 @@
 # Run the script
 #
 #   /home/rust/bin/rustserverbackup.sh
+#
+# Run the script for a specific RustDedicated server dot-env file:
+#
+#   /home/rust/bin/rustserverbackup.sh --server server-one.env
+#
+# If --server is not specified, the standard .rustserver.env file is used.
 #
 # This script can be automated to run from a crontab.
 #
@@ -57,8 +63,33 @@
 #
 ###
 
-# Load Rust server .env settings
-. /home/rust/.rustacs/.rustserver.env
+# Select Rust server dot-env file
+DEFAULT_SERVER_ENV="/home/rust/.rustacs/.rustserver.env"
+SERVER_ENV="${DEFAULT_SERVER_ENV}"
+
+if [ "${1:-}" = "--server" ]; then
+    if [ -z "${2:-}" ] || [ -n "${3:-}" ]; then
+        printf "Usage: %s [--server <dot-env>]\n" "${0}" >&2
+        exit 1
+    fi
+
+    if [[ "${2}" = /* ]]; then
+        SERVER_ENV="${2}"
+    else
+        SERVER_ENV="/home/rust/.rustacs/${2}"
+    fi
+elif [ "$#" -ne 0 ]; then
+    printf "Usage: %s [--server <dot-env>]\n" "${0}" >&2
+    exit 1
+fi
+
+if [ ! -r "${SERVER_ENV}" ]; then
+    printf "ERROR! - Dot-env file %s not found or not readable!\n" "${SERVER_ENV}" >&2
+    exit 1
+fi
+
+# Load selected Rust server dot-env settings
+. "${SERVER_ENV}"
 
 # Variables
 PRGNAM="$(basename "${BASH_SOURCE[0]}" .sh)"
@@ -68,9 +99,10 @@ TIMESTAMP=$(date '+%F-%H%M%S')
 BACKUP_FILE="${BACKUP_DIR}/${RUST_SERVER_ID}-backup_${TIMESTAMP}.tar.xz"
 LOG_DIR="${RUST_LOGDIR}"
 LOG_FILE="${LOG_DIR}/${PRGNAM}.log"
+SERVICE_UNIT="$(basename "${RUST_SERVICE_PATH:?RUST_SERVICE_PATH is not set in dot-env}")"
 
 # Purge backup archive files older than n DAYS
-ARCHIVE_AGE="63"
+ARCHIVE_AGE="${RUST_BACKUP_RETENTION}"
 
 # Progress log function
 log() {
@@ -96,7 +128,7 @@ if [ ! -x "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" ]; then
 fi
 
 # Check server active state to decide on warning messages (or not)
-RUSTSERVER_STATE="$(sudo /usr/bin/systemctl is-active rustserver.service)"
+RUSTSERVER_STATE="$(sudo /usr/bin/systemctl is-active "${SERVICE_UNIT}")"
 
 if [ "${RUSTSERVER_STATE}" = "active" ]; then
     log "Initiating active Rust server backup notices..."
@@ -104,35 +136,35 @@ if [ "${RUSTSERVER_STATE}" = "active" ]; then
     log "Commencing backup countdown. T-minus 30 minutes and counting ..."
 
     # Broadcast 30-minute backup notice
-    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" say ": Maintenance scheduled in 30 minutes. Server will be restarting!"
+    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" say ": Maintenance scheduled in 30 minutes. Server will be restarting!"
     sleep 900
 
     # Broadcast 15-minute backup notice
-    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" say ": Maintenance scheduled in 15 minutes. Server will be restarting!"
+    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" say ": Maintenance scheduled in 15 minutes. Server will be restarting!"
     sleep 600
 
     # Broadcast 5-minute backup notice
-    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" say ": Maintenance scheduled in 5 minutes. Server will be restarting!"
+    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" say ": Maintenance scheduled in 5 minutes. Server will be restarting!"
     sleep 270
 
     # Broadcast imminent 30 second backup warning
-    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" say "WARNING! Shutting down for maintenance in 30 seconds and restarting. Secure your loot!"
+    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" say "WARNING! Shutting down for maintenance in 30 seconds and restarting. Secure your loot!"
 
     # RUSTACS server.save
-    if ! "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" server.save; then
+    if ! "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" server.save; then
         log "ERROR! - Rust server save command failed! Aborting backup..." >&2
         exit 1
     fi
-    log "${RUSTACS_PATH} server.save ..."
+    log "${RUSTACS_PATH} --server ${SERVER_ENV} server.save ..."
 
     sleep 30
 
     # Final broadcast notice
-    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" say ": The hydrated ferric oxide will be with you. Always"
+    "${RUSTACS_PATH:?RUSTACS_PATH is not set in dot-env}" --server "${SERVER_ENV}" say ": The hydrated ferric oxide will be with you. Always"
 
-    log "Stopping rustserver.service via systemd..."
-    if ! sudo /usr/bin/systemctl stop rustserver.service; then
-        log "ERROR! - Failed to stop rustserver.service!" >&2
+    log "Stopping ${SERVICE_UNIT} via systemd..."
+    if ! sudo /usr/bin/systemctl stop "${SERVICE_UNIT}"; then
+        log "ERROR! - Failed to stop ${SERVICE_UNIT}!" >&2
         exit 1
     fi
 
@@ -164,9 +196,9 @@ else
     log "ERROR! - Archiving Rust server state files encountered a terminal failure and exited with error code: [${TAR_STATUS}]" >&2
 
     if [ "${RUSTSERVER_ACTIVE}" -eq 1 ]; then
-        log "Restarting rustserver.service via systemd..."
-        if ! sudo /usr/bin/systemctl start rustserver.service; then
-            log "ERROR! - Failed to start rustserver.service!" >&2
+        log "Restarting ${SERVICE_UNIT} via systemd..."
+        if ! sudo /usr/bin/systemctl start "${SERVICE_UNIT}"; then
+            log "ERROR! - Failed to start ${SERVICE_UNIT}!" >&2
         fi
     fi
 
@@ -188,9 +220,9 @@ fi
 
 # Restart Rust server [systemd] service
 if [ "${RUSTSERVER_ACTIVE}" -eq 1 ]; then
-    log "Starting game server engine via systemd..."
-    if ! sudo /usr/bin/systemctl start rustserver.service; then
-        log "ERROR! - Failed to start rustserver.service!" >&2
+    log "Starting ${SERVICE_UNIT} via systemd..."
+    if ! sudo /usr/bin/systemctl start "${SERVICE_UNIT}"; then
+        log "ERROR! - Failed to start ${SERVICE_UNIT}!" >&2
         exit 1
     fi
 fi

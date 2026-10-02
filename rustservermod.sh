@@ -4,8 +4,6 @@
 #
 # Rust server mod framework installer
 #
-# 2026-09-30 - v1.0.0   [release version]
-#
 # This script installs either Carbon or Oxide on an existing Rust server.
 # The selected framework is downloaded from its current Linux release and
 # extracted directly into the Rust server installation directory.

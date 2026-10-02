@@ -1,13 +1,13 @@
 # RUSTACS
 
-**RUSTACS** - Rust Administration & Control System.
+**RUSTACS** - RustDedicated Server Administration & Control System.
 
 RUSTACS is a collection of command-line tools, Bash scripts, a dot-env file 
-and a systemd service unit for administering Linux-hosted Rust servers. The 
-idea is simple; keep a Rust server's settings in a dot-env file and let the
-service unit, CLI tool, and the Bash scripts use the same values. That keeps 
-the important environment variables in one place instead of repeating them 
-across multiple scripts.
+and a systemd service unit for administering Linux-hosted RustDedicated 
+servers. The idea is simple; keep a RustDedicated server's settings in a 
+dot-env file and let the service unit, CLI tool, and the Bash scripts use 
+the same values. That keeps the important environment variables in one place 
+instead of repeating them across multiple locations.
 
 **NOTE**: [Rust](https://rust.facepunch.com) is a multiplayer survival video 
 game by [Facepunch Studios](https://facepunch.com/). Not to be confused with 
@@ -48,32 +48,32 @@ RUSTACS is released under the [MIT License](LICENSE).
     - [`rustacs` options](#rustacs-options)
     - [`--verbose`](#--verbose)
   - [`rustserverbackup.sh`](#rustserverbackupsh)
-    - [What the backup script does](#what-the-backup-script-does)
+    - [What `rustserverbackup.sh` does](#what-rustserverbackupsh-does)
     - [Backup sequence](#backup-sequence)
-    - [Running the backup script](#running-the-backup-script)
+    - [Running `rustserverbackup.sh`](#running-rustserverbackupsh)
     - [Backup files and retention](#backup-files-and-retention)
   - [`rustservergenesys.sh`](#rustservergenesyssh)
-    - [What genesys does](#what-genesys-does)
+    - [What `rustservergenesys.sh` does](#what-rustservergenesyssh-does)
     - [Preparing a new map](#preparing-a-new-map)
     - [Applying `master.config`](#applying-masterconfig)
-    - [Genesys command options](#genesys-command-options)
-    - [Genesys backups](#genesys-backups)
+    - [`rustservergenesys.sh` command options](#rustservergenesyssh-command-options)
+    - [`rustservergenesys.sh` backups](#rustservergenesyssh-backups)
   - [`rustserverlogswap.sh`](#rustserverlogswapsh)
-    - [What logswap does](#what-logswap-does)
-    - [Running logswap](#running-logswap)
+    - [What `rustserverlogswap.sh` does](#what-rustserverlogswapsh-does)
+    - [Running `rustserverlogswap.sh`](#running-rustserverlogswapsh)
     - [Log archive sequence](#log-archive-sequence)
   - [`rustservermod.sh`](#rustservermodsh)
-    - [What the mod installer does](#what-the-mod-installer-does)
+    - [What `rustservermod.sh` does](#what-rustservermodsh-does)
     - [Installing Carbon](#installing-carbon)
     - [Installing Oxide](#installing-oxide)
-    - [Mod installer safeguards](#mod-installer-safeguards)
+    - [`rustservermod.sh` safeguards](#rustservermodsh-safeguards)
 - [`rustserver.service`](#rustserverservice)
   - [Installing the service](#installing-the-service)
   - [Starting and stopping the service](#starting-and-stopping-the-service)
   - [What happens when the service starts](#what-happens-when-the-service-starts)
 - [Automation with cron](#automation-with-cron)
 - [Logs and backups](#logs-and-backups)
-- [Troubleshooting](#troubleshooting)
+- [Troubleshooting RUSTACS](#troubleshooting-rustacs)
 - [License](#license)
 
 ######################
@@ -100,10 +100,12 @@ git clone https://github.com/Exaga/rustacs
 cd rustacs
 ```
 
-The cloned directory contains the RUSTACS files. Nothing needs compiling.
-`rustacs` is written in Python 3, and the automation tools are Bash. Both 
-are scripting languages executed line-by-line at runtime by a program called 
-an interpreter, rather than being translated into machine code beforehand.
+The cloned directory contains the RUSTACS files that require no compilation 
+step. Because `rustacs` is written in Python 3 and the automation tools are 
+written in Bash, both run immediately through their respective runtime 
+interpreters. Unlike compiled languages (e.g. C++) they run immediately 
+without requiring a separate ahead-of-time phase to build a standalone 
+machine-code executable.
 
 ## What RUSTACS contains
 
@@ -111,9 +113,9 @@ RUSTACS consists of the following main parts:
 
 ```text
 rustacs                  Python 3 WebRCON and service command tool
-rustserverbackup.sh      Rust server state backup script
+rustserverbackup.sh      RustDedicated server state backup script
 rustservergenesys.sh     Rust world/map preparation and deployment script
-rustserverlogswap.sh     Rust server log serialisation and archive script
+rustserverlogswap.sh     RustDedicated server log serialisation and archive script
 rustservermod.sh         Carbon/Oxide installation script
 rustserver.service       systemd service unit for RustDedicated
 .rustserver.env          RUSTACS dot-env file
@@ -126,7 +128,7 @@ system.
 ## Requirements
 
 RUSTACS assumes you've already got a Linux system on which you intend to run 
-a Rust server. The supplied layout uses a `rust` user and `rust` group. If 
+a RustDedicated server. The supplied layout uses a `rust:rust` user/group. If 
 you use different account names or PATHs, change the relevant values and
 files to suit your system.
 
@@ -156,8 +158,8 @@ The supplied layout is:
 /home/rust/.rustacs/        RUSTACS dot-env and master files
 /home/rust/bin/             RUSTACS tools and scripts
 /home/rust/rustserver/      RustDedicated installation
-/home/rust/backups/         Rust server backups
-/home/rust/logs/            Rust server and RUSTACS logs
+/home/rust/backups/         RustDedicated server backups
+/home/rust/logs/            RustDedicated server and RUSTACS logs
 /etc/systemd/system/        systemd service units
 ```
 
@@ -170,7 +172,7 @@ sudo mkdir -p /home/rust/backups
 sudo mkdir -p /home/rust/logs
 ```
 
-Copy `rustacs` and the Bash tools:
+Copy `rustacs` and the Bash script tools:
 
 ```bash
 sudo cp rustacs /home/rust/bin/rustacs
@@ -180,7 +182,7 @@ sudo cp rustserverlogswap.sh /home/rust/bin/
 sudo cp rustservermod.sh /home/rust/bin/
 ```
 
-Make them executable:
+Make them executable (mode 770):
 
 ```bash
 sudo chmod 770 /home/rust/bin/rustacs
@@ -190,14 +192,14 @@ sudo chmod 770 /home/rust/bin/rustserverlogswap.sh
 sudo chmod 770 /home/rust/bin/rustservermod.sh
 ```
 
-Copy the supplied dot-env file and systemd service unit:
+Copy the supplied dot-env and systemd service unit files:
 
 ```bash
 sudo cp .rustserver.env /home/rust/.rustacs/.rustserver.env
 sudo cp rustserver.service /etc/systemd/system/rustserver.service
 ```
 
-Set ownership on the RUSTACS directories:
+Set user/group ownership on the RUSTACS directories:
 
 ```bash
 sudo chown -R rust:rust /home/rust/.rustacs
@@ -206,30 +208,30 @@ sudo chown -R rust:rust /home/rust/backups
 sudo chown -R rust:rust /home/rust/logs
 ```
 
-Set the dot-env file permissions:
+Set the dot-env file permissions (mode 640):
 
 ```bash
 sudo chmod 640 /home/rust/.rustacs/.rustserver.env
 ```
 
 If you want `rustacs` available as a normal system command, create a symbolic
-link in `/usr/local/bin` rather than moving the RUSTACS copy:
+link in `/usr/local/bin` rather than creating a copy:
 
 ```bash
 sudo ln -s /home/rust/bin/rustacs /usr/local/bin/rustacs
 ```
 
-Reload systemd after installing or changing `rustserver.service`:
+Reload systemd daemon after installing or changing `rustserver.service`:
 
 ```bash
 sudo systemctl daemon-reload
 ```
 
-Don't start the Rust server yet. Read and edit the dot-env file first.
+Don't start the RustDedicated server yet. Audit the dot-env file first.
 
 ## The dot-env file
 
-The dot-env file is the centre of RUSTACS. The standard PATH is:
+The dot-env file is the *centre* of RUSTACS. The standard PATH is:
 
 ```text
 /home/rust/.rustacs/.rustserver.env
@@ -238,7 +240,7 @@ The dot-env file is the centre of RUSTACS. The standard PATH is:
 The Bash tools source that file directly, `rustacs` reads it, and
 `rustserver.service` loads it through systemd's `EnvironmentFile` directive.
 The dot-env file is therefore authoritative for the server values used by
-RUSTACS.
+all RUSTACS files and processes.
 
 Edit it before starting the server:
 
@@ -246,15 +248,19 @@ Edit it before starting the server:
 sudo nano /home/rust/.rustacs/.rustserver.env
 ```
 
-Don't treat the supplied values as magic defaults for somebody else's server.
-Read the file from top to bottom and set the values for the server you're
-actually running.
+**!! <u>IMPORTANT</u> !!**   
+
+Do NOT treat the supplied values as automatic defaults for your server! 
+Audit the dot-env file from top to bottom and set the correct values 
+for the server you're actually running. Spending a few minutes ensuring 
+that the correct values have been set in the dot-env file is going to 
+save you from a lot of head-scratching and trouble-shooting later!
 
 ### Dot-env file permissions
 
 The dot-env file contains the WebRCON password in plain text because
-RustDedicated needs that value and `rustacs` needs to read it. That makes the
-file permissions important.
+RustDedicated needs that value and `rustacs` needs to read it. That makes 
+the file permissions important.
 
 The project layout uses:
 
@@ -264,14 +270,18 @@ group: rust
 mode:  0640
 ```
 
-Set them with:
+Mode 640 permissions allow only the group to read it and the owner to read
+and write to the file.
+
+Set the dot-env ownership and mode 640 with:
 
 ```bash
 sudo chown rust:rust /home/rust/.rustacs/.rustserver.env
 sudo chmod 640 /home/rust/.rustacs/.rustserver.env
 ```
 
-Don't publish your live dot-env file with a real RCON password in it.
+**Don't upload, commit, post or otherwise share your dot-env file publicly**
+**while it contains a real RCON password! Not even for support purposes.**
 
 ### Dot-env settings
 
@@ -295,20 +305,21 @@ RUST_MASTER_CONFIG="/home/rust/.rustacs/master.config"
 RUST_SERVICE_PATH=/etc/systemd/system/rustserver.service
 ```
 
-This is the PATH to the Rust server systemd service unit. `rustacs`,
+This is the PATH to the RustDedicated server systemd service unit. `rustacs`,
 `rustservergenesys.sh` and `rustservermod.sh` use it when checking or managing
-the service.
+the RustDedicated server systemd service.
 
-**Rust account**
+**Rust user account and group**
 
 ```ini
 RUST_USERNAME=rust
 RUST_USERGROUP=rust
 ```
 
-These are the user and group that own the Rust server and RUSTACS files.
+These are the user and group that own the RustDedicated server and RUSTACS 
+server management files.
 
-**Infrastructure PATHs**
+**Rust infrastructure PATHs**
 
 ```ini
 RUST_USER_HOME=/home/rust
@@ -320,7 +331,7 @@ RUST_BACKUP_DIR=/home/rust/backups
 These identify the Rust user's home directory, the RustDedicated installation
 PATH, the server data PATH and the backup PATH.
 
-**Rust server settings**
+**RustDedicated server settings**
 
 The dot-env file contains the values passed to RustDedicated for the server IP,
 hostname, identity, game port, query port, map seed, world size, level, maximum
@@ -347,7 +358,7 @@ RUST_SERVER_SAVEINTERVAL
 identity for its server data directory, and `rustserverbackup.sh` uses the same
 value when locating the data it backs up.
 
-**WebRCON settings**
+**Rust WebRCON settings**
 
 ```ini
 RUST_RCON_WEB=1
@@ -369,21 +380,23 @@ RUSTACS_PATH=/home/rust/bin/rustacs
 `rustserverbackup.sh` uses this PATH to call `rustacs` for maintenance messages
 and `server.save`.
 
-**Logging**
+**Rust and RUSTACS logging**
 
 ```ini
 RUST_LOGDIR=/home/rust/logs
 RUST_SERVER_LOGFILE=rustserver
 RUST_SERVER_MAX_LOGFILE=2
+RUST_BACKUP_RETENTION=31
 ```
 
 `RUST_LOGDIR` is the log directory PATH. `RUST_SERVER_MAX_LOGFILE` is the size,
-in MiB, at which `rustserverlogswap.sh` archives the active Rust server log.
+in MiB, at which `rustserverlogswap.sh` archives the active RustDedicated 
+server log.
 
 ### `master.config`
 
 `master.config` belongs to `rustservergenesys.sh`. It represents the settings
-prepared for the next Rust server world.
+prepared for the next RustDedicated server game world.
 
 The normal PATH is:
 
@@ -391,10 +404,14 @@ The normal PATH is:
 /home/rust/.rustacs/master.config
 ```
 
-If it doesn't exist when genesys needs it, genesys creates it from the current
-dot-env file. The map-selection commands alter `master.config`; they don't
-immediately overwrite the active dot-env file. Running genesys later with no
-arguments performs the apply operation while the Rust server is stopped.
+If master.config doesn't exist when `rustservergenesys.sh` needs it, 
+`rustservergenesys.sh` creates it from the current dot-env file. The 
+map-selection commands alter `master.config` but don't immediately 
+overwrite the active dot-env file. Running `rustservergenesys.sh` later 
+with no arguments performs the apply operation while the RustDedicated 
+server is stopped. This is a manual step intentionally - the live dot-env
+file should never be overwritten unless the server owner/admin specifically 
+approves it.
 
 That distinction matters:
 
@@ -405,9 +422,10 @@ master.config    settings prepared for the next world
 
 ### Multi-server setup
 
-If you're administering more than one Rust server, give **each server its own
-complete dot-env file**. Don't put several servers into one dot-env file and
-don't make unrelated servers share values that need to be different.
+If you're administering more than one RustDedicated server, give  
+**each individual server its own separate and individual dot-env file!** 
+Don't put two or more servers into one dot-env file and don't make any
+other server(s) share values that need to be proprietary.
 
 For example:
 
@@ -417,30 +435,54 @@ For example:
 /home/rust/.rustacs/server-three.env
 ```
 
-Each server's dot-env file needs its own appropriate values, including its
-identity, game port, query port, RCON port, server/data PATHs, service-unit PATH,
-backup PATH and any other setting that differs from the other servers.
+Each server's dot-env file needs its own bespoke values, including its
+identity, game port, query port, RCON port, server/data PATHs, service unit 
+file, backup directory PATH and any other setting(s) that differentiates it 
+from all other RustDedicated servers. Ignoring this precondition is a recipe
+for disaster!
 
-The current RUSTACS tools read this fixed active dot-env PATH:
+There are two different multi-server arrangements to consider.
+
+**Multiple server definitions with one RustDedicated instance managed at a time**
+
+The standard RUSTACS dot-env PATH is:
 
 ```text
 /home/rust/.rustacs/.rustserver.env
 ```
 
-One straightforward way of keeping individual dot-env files is to make that
-active PATH a symbolic link to the dot-env file for the server you're working
-with:
+If you keep several server-specific dot-env files but only manage one
+RustDedicated instance at a time, `.rustserver.env` can be a symbolic link to
+the dot-env file for the server you're currently working with.
+
+For example:
 
 ```bash
 cd /home/rust/.rustacs
 ln -sfn server-one.env .rustserver.env
 ```
 
-To select another dot-env file:
+The result is:
+
+```text
+.rustserver.env -> server-one.env
+```
+
+To select `server-two.env` instead:
 
 ```bash
 ln -sfn server-two.env .rustserver.env
 ```
+
+The symbolic link is replaced, so the result is now:
+
+```text
+.rustserver.env -> server-two.env
+```
+
+The individual server dot-env files remain completely separate. Nothing is
+merged, copied or shared between them. `.rustserver.env` is simply selecting
+which server-specific dot-env file is reached through the standard PATH.
 
 Check the link before doing anything destructive or service-related:
 
@@ -448,19 +490,37 @@ Check the link before doing anything destructive or service-related:
 readlink -f /home/rust/.rustacs/.rustserver.env
 ```
 
-There are two important points here.
+**Multiple RustDedicated instances running at the same time**
 
-First, the supplied `rustserver.service` also loads the fixed
-`/home/rust/.rustacs/.rustserver.env` PATH. If you run multiple RustDedicated
-instances **at the same time**, each instance needs its own correctly adapted
-systemd service unit and non-conflicting game, query and RCON ports. Don't point
-a running service at a different server's dot-env file underneath it.
+If two or more RustDedicated instances run simultaneously on the same physical
+or virtual server, don't use a changing `.rustserver.env` symbolic link as a
+shared selector for those running instances.
 
-Second, the current `rustserverbackup.sh` explicitly checks, stops and starts
-`rustserver.service` by that unit name. If you adapt RUSTACS for simultaneously
-running multiple service units, adapt that script for the corresponding unit as
-well. The README isn't going to pretend the stock script dynamically selects a
-service unit when it doesn't.
+Each running RustDedicated instance needs its own dot-env file, its own
+correctly adapted systemd service unit, and non-conflicting game, query and
+RCON ports. Each service unit should load the dot-env file belonging to that
+specific RustDedicated instance.
+
+For example:
+
+```text
+rustserver-one.service    -> server-one.env
+rustserver-two.service    -> server-two.env
+rustserver-three.service  -> server-three.env
+```
+
+`rustserverbackup.sh` can explicitly select the server dot-env file to use:
+
+```bash
+/home/rust/bin/rustserverbackup.sh --server server-one.env
+/home/rust/bin/rustserverbackup.sh --server server-two.env
+/home/rust/bin/rustserverbackup.sh --server server-three.env
+```
+
+The selected dot-env file supplies that server's identity, data PATH, backup
+PATH, service unit and other server-specific values. If `--server` isn't
+specified, `rustserverbackup.sh` uses the standard
+`/home/rust/.rustacs/.rustserver.env` dot-env file.
 
 Each server should also have its own `master.config` PATH in its dot-env file.
 For example:
@@ -594,11 +654,15 @@ successful RCON response.
 
 ### `rustserverbackup.sh`
 
-#### What the backup script does
+#### What `rustserverbackup.sh` does
 
-`rustserverbackup.sh` performs a transactional backup of the Rust server's
-state data. It uses the active dot-env file to determine the server identity,
-data PATH, backup PATH, Rust account and `rustacs` PATH.
+`rustserverbackup.sh` performs a transactional backup of a RustDedicated
+server's state data. By default it uses the standard
+`/home/rust/.rustacs/.rustserver.env` dot-env file. A specific server dot-env
+file can instead be selected with `--server <dot-env>`.
+
+The selected dot-env file determines the server identity, data PATH, backup
+PATH, systemd service unit, Rust account and `rustacs` PATH.
 
 The script backs up selected state beneath:
 
@@ -615,7 +679,8 @@ active, players get a maintenance countdown through `rustacs` first.
 
 #### Backup sequence
 
-When `rustserver.service` is active, the script:
+When the systemd service unit defined by `RUST_SERVICE_PATH` in the selected
+dot-env file is active, the script:
 
 1. Announces maintenance 30 minutes before shutdown.
 2. Announces it again at 15 minutes.
@@ -623,10 +688,11 @@ When `rustserver.service` is active, the script:
 4. Sends a final 30-second warning.
 5. Runs `server.save` through `rustacs`.
 6. Waits 30 seconds and sends the final shutdown message.
-7. Stops `rustserver.service`.
+7. Stops the selected server's systemd service unit.
 8. Creates the xz-compressed backup archive.
 9. Corrects archive ownership when necessary.
-10. Starts `rustserver.service` again because it was active before the backup.
+10. Starts the selected server's systemd service unit again because it was active
+    before the backup.
 11. Removes matching backup archives older than the retention period.
 
 If the service is already `inactive` or `failed`, the warning/countdown and
@@ -635,16 +701,33 @@ stop/restart sequence is skipped and the script proceeds to the archive.
 An unexpected service state causes the script to abort rather than guessing
 what it should do.
 
-#### Running the backup script
+#### Running `rustserverbackup.sh`
 
-Run it manually with:
+Run it manually with no arguments to use the standard dot-env file:
 
 ```bash
 /home/rust/bin/rustserverbackup.sh
 ```
 
-There are no command-line options. Its settings come from the active dot-env
-file and from values defined inside the script.
+To back up a specific RustDedicated server, use `--server` with that server's
+dot-env file:
+
+```bash
+/home/rust/bin/rustserverbackup.sh --server server-one.env
+```
+
+A relative filename is resolved beneath `/home/rust/.rustacs/`. An absolute
+dot-env PATH can also be supplied.
+
+```bash
+/home/rust/bin/rustserverbackup.sh --server /home/rust/.rustacs/server-one.env
+```
+
+If `--server` isn't specified, the script uses:
+
+```text
+/home/rust/.rustacs/.rustserver.env
+```
 
 The script expects `RUSTACS_PATH` to point to an executable `rustacs` tool. It
 also uses `sudo systemctl` and may use `sudo chown`, so the account running it
@@ -659,8 +742,10 @@ server identity and timestamp:
 <RUST_SERVER_ID>-backup_<timestamp>.tar.xz
 ```
 
-The current script sets its archive-retention age internally to 63 days. Its
-housekeeping pass removes matching backup archives older than that age.
+The archive-retention age is set by `RUST_BACKUP_RETENTION` in the selected
+dot-env file and is calculated in days. The supplied value is 31 (days). The 
+housekeeping pass deletes matching backup archives older than the specified 
+retention value.
 
 The script writes its own progress log as:
 
@@ -670,31 +755,49 @@ ${RUST_LOGDIR}/rustserverbackup.log
 
 ### `rustservergenesys.sh`
 
-#### What genesys does
+#### What `rustservergenesys.sh` does
 
-`rustservergenesys.sh` manages the settings used for the next Rust server world.
-It has two deliberately separate jobs:
+`rustservergenesys.sh` manages the settings used for the next RustDedicated 
+server world. It has two deliberately separate jobs:
 
 1. **Prepare** map settings in `master.config`.
 2. **Apply** `master.config` to the active dot-env file when the server is
    stopped.
 
-Preparing the next map doesn't generate or deploy a Rust world immediately.
-RustDedicated uses the new seed/world-size settings when the prepared dot-env
-values are subsequently used to start the service.
+Preparing the next map doesn't generate or deploy a RustDedicated game world 
+immediately. RustDedicated uses the new seed/world-size settings when the 
+prepared dot-env values are subsequently used to (re)start the service.
 
-The script doesn't remove player blueprints.
+**NOTE**: The script doesn't remove player blueprints. Player blueprints are 
+sacrosanct and their removal should always be at the discretion of the server 
+owner or admin.
 
 #### Preparing a new map
 
-A random seed can be prepared with:
+New RustDedicated server world maps can be randomly generated using the 
+`rustservergenesys.sh +newmap` script argument. The formula for this is: 
+`$(( $(od -An -N4 -tu4 /dev/urandom) % 2147483648 ))`
+
+Example usage and output:
+
+```bash
+~$ echo $(( $(od -An -N4 -tu4 /dev/urandom) % 2147483648 ))
+1846592356
+```
+
+This generates a pseudo-random integer between 0 and 2147483647 (inclusive)
+which is the range of usable RustDedicated world map seeds. The `+server.seed`
+convar (console variable) in a RustDedicated service unit accepts only integer 
+values (i.e. whole numbers).
+
+Generate a random RustDedicated world map by running this script with:
 
 ```bash
 /home/rust/bin/rustservergenesys.sh +newmap
 ```
 
-`+newmap` changes the seed only. It doesn't silently change the existing world
-size.
+The `+newmap` argument changes the seed only. It doesn't silently change the 
+existing world size or any other setting.
 
 Set a specific seed with:
 
@@ -714,7 +817,7 @@ Seed and size can be set together:
 /home/rust/bin/rustservergenesys.sh +seed 123456789 +size 6000
 ```
 
-A new random seed and a new size can also be prepared together:
+A new random seed and a new world map size can also be prepared together:
 
 ```bash
 /home/rust/bin/rustservergenesys.sh +newmap +size 6000
@@ -725,33 +828,37 @@ The script validates the whole command before it changes `master.config`, so a
 bad second option won't leave a half-applied command behind.
 
 These preparation operations can be performed while RustDedicated is running
-because they alter `master.config` and then exit. They don't deploy the new
+because they update `master.config` and then exit. They don't deploy the new
 settings to the active dot-env file.
+
+Any changes to the `master.config` do not affect a RustDedicated server that 
+is currently running or stopped (inactive).
 
 #### Applying `master.config`
 
-To apply the prepared `master.config`, stop the Rust server and run genesys with
-no arguments:
+To apply the prepared `master.config`, stop the RustDedicated server and run 
+`rustservergenesys.sh` with no arguments:
 
 ```bash
 /home/rust/bin/rustservergenesys.sh
 ```
 
-The apply operation refuses to continue while the Rust server service is
-active.
+**NB**: This operation will not continue while the RustDedicated server 
+service is active and running. It should be stopped beforehand.
 
 If `master.config` and the active dot-env file are identical, there's nothing
-to apply and the script exits without replacing anything.
+to apply and the script exits without any further action.
 
-If they're different, genesys:
+If `master.config` and the active dot-env file differ, `rustservergenesys.sh`
+script will:
 
-1. Makes sure the world-backup directory exists.
-2. Backs up the current dot-env file.
-3. Copies `master.config` over the active dot-env file.
-4. Restores the expected Rust ownership on the relevant files.
-5. Logs the completed operation.
+1. Make sure the world-backup directory exists.
+2. Back up the current dot-env file.
+3. Copy `master.config` over the active dot-env file.
+4. Restore the expected Rust ownership on the relevant files.
+5. Log the completed operation.
 
-#### Genesys command options
+#### `rustservergenesys.sh` command options
 
 ```text
 +newmap          Generate a new random map seed
@@ -764,7 +871,7 @@ If they're different, genesys:
 `+newmap` may be combined with `+size`, and `+seed` may be combined with
 `+size`.
 
-A missing value, duplicate option, unknown option, seed outside its accepted
+A missing value, duplicate option, unknown option, seed outside the accepted
 range or world size outside `1000-6000` is rejected before `master.config` is
 changed.
 
@@ -774,9 +881,9 @@ Display the command usage with:
 /home/rust/bin/rustservergenesys.sh --help
 ```
 
-#### Genesys backups
+#### `rustservergenesys.sh` backups
 
-Before genesys applies a changed `master.config`, it backs up the current
+Before `rustservergenesys.sh` applies a changed `master.config`, it backs up the current
 dot-env file beneath:
 
 ```text
@@ -795,12 +902,12 @@ ${RUST_LOGDIR}/rustservergenesys.log
 
 ### `rustserverlogswap.sh`
 
-#### What logswap does
+#### What `rustserverlogswap.sh` does
 
 `rustserverlogswap.sh` prevents the active RustDedicated log from growing
 indefinitely. It checks the active log's raw byte size against
 `RUST_SERVER_MAX_LOGFILE` from the dot-env file. That setting is expressed in
-MiB.
+MiB (mebibytes).
 
 The active log filename is built from RUST_SERVER_LOGFILE beneath
 RUST_LOGDIR:
@@ -812,7 +919,7 @@ RUST_LOGDIR:
 If the log doesn't exist, or hasn't reached the configured size, the script has
 nothing to do and exits.
 
-#### Running logswap
+#### Running `rustserverlogswap.sh`
 
 Run it manually with:
 
@@ -826,7 +933,7 @@ the active log has reached the configured threshold.
 
 #### Log archive sequence
 
-When the active log reaches the threshold, logswap:
+When the active log reaches the threshold, `rustserverlogswap.sh`:
 
 1. Copies the active log to a timestamped temporary log file.
 2. Truncates the original active log in place so the service can continue
@@ -851,21 +958,27 @@ ${RUST_LOGDIR}/rustserverlogswap.log
 
 ### `rustservermod.sh`
 
-#### What the mod installer does
+#### What `rustservermod.sh` does
 
 `rustservermod.sh` installs either Carbon or Oxide into the RustDedicated
-installation identified by `RUST_INSTALL_WORKDIR` in the active dot-env file.
+install directory identified by `RUST_INSTALL_WORKDIR` in the active 
+dot-env file.
 
-It downloads the selected Linux release to a temporary directory, extracts it
-into the RustDedicated installation and then sets the installation ownership to
-the Rust user/group from the dot-env file.
+It downloads the selected Linux release to a temporary directory, extracts 
+it into the RustDedicated installation and then sets the installation 
+ownership to the Rust user/group from the dot-env file.
 
-The script is an installer. It doesn't claim to perform every framework-specific
-runtime setting that a particular Carbon or Oxide release may require.
+This script is an installer. It does not claim to perform every 
+framework-specific runtime setting that a particular Carbon or Oxide release 
+may require.
+
+**NB**: Installing any modding framework risks stripping a RustDedicated server 
+of its vanilla status, forcing it to be listed under the 'Modded' tab instead of 
+'Community' to comply with [Facepunch](https://support.facepunchstudios.com/hc/en-us/articles/360009062817-Guidelines-for-community-servers-using-plugins-mods) guidelines.
 
 #### Installing Carbon
 
-Make sure the Rust server service is stopped, then run:
+Make sure the RustDedicated server service is stopped, then run:
 
 ```bash
 /home/rust/bin/rustservermod.sh carbon
@@ -876,7 +989,7 @@ Carbon is downloaded as a compressed tar archive and extracted directly into
 
 #### Installing Oxide
 
-Make sure the Rust server service is stopped, then run:
+Make sure the RustDedicated server service is stopped, then run:
 
 ```bash
 /home/rust/bin/rustservermod.sh oxide
@@ -886,25 +999,25 @@ Oxide is downloaded as a ZIP archive and extracted directly into
 `RUST_INSTALL_WORKDIR`. The `unzip` command is therefore required for an Oxide
 installation.
 
-#### Mod installer safeguards
+#### `rustservermod.sh` safeguards
 
 Before installing anything, the script checks that:
 
 - a valid argument (`carbon` or `oxide`) was supplied;
 - the RustDedicated installation PATH exists;
 - the systemd service unit exists;
-- the Rust server service is inactive;
+- the RustDedicated server service is inactive;
 - `curl` is installed;
 - `unzip` is installed when Oxide is selected; and
 - the other mod framework hasn't already been detected.
 
 Carbon and Oxide aren't intended to be installed together by this script. If it
-detects an `oxide` directory while installing Carbon, or a `carbon` directory
-while installing Oxide, it aborts.
+detects an `oxide` directory while installing Carbon, or vice versa, it aborts.
 
 Temporary downloads are removed automatically when the script exits.
 
-The script writes its progress log as:
+The script writes its progress log to the directory defined in the dot-env 
+file by `RUST_LOGDIR` variable, as:
 
 ```text
 ${RUST_LOGDIR}/rustservermod.log
@@ -912,8 +1025,8 @@ ${RUST_LOGDIR}/rustservermod.log
 
 ## `rustserver.service`
 
-`rustserver.service` is the supplied systemd service unit for RustDedicated. It
-isn't just a wrapper around the executable: it defines the account,
+`rustserver.service` is the supplied systemd service unit for RustDedicated. 
+It isn't just a wrapper around the executable: it defines the account,
 RustDedicated working directory, update step, restart behaviour, startup
 arguments and logging used by the supplied RUSTACS layout.
 
@@ -941,10 +1054,15 @@ Enable it at boot if that's what you want:
 sudo systemctl enable rustserver.service
 ```
 
-Enabling a service and starting it are different operations. `enable` arranges
-for systemd to start it at boot; it doesn't mean you have to start it right now.
+Enabling a service and starting it are different operations. `enable` will
+cause systemd to start it at boot; it doesn't mean you have to start it right 
+away.
 
 ### Starting and stopping the service
+
+With `rustacs` you have an easy and convenient command to perform the status
+operations of a RustDedicated server. Or you can do it via the long-hand, 
+traditional `systemctl` way.
 
 Using systemd directly:
 
@@ -952,10 +1070,10 @@ Using systemd directly:
 sudo systemctl start rustserver.service
 sudo systemctl stop rustserver.service
 sudo systemctl restart rustserver.service
-systemctl status rustserver.service
+sudo systemctl status --no-pager rustserver.service
 ```
 
-Or, for the operations supported by `rustacs`:
+Using `rustacs`:
 
 ```bash
 rustacs server start
@@ -966,27 +1084,37 @@ rustacs server status
 
 ### What happens when the service starts
 
-Before launching RustDedicated, the supplied unit runs SteamCMD anonymously and
-performs the Rust Dedicated Server application update for Steam App ID `258550`.
+Before launching RustDedicated, the supplied unit runs SteamCMD anonymously 
+and performs the RustDedicated server application update for: 
+Steam App ID `258550`
 
-It then launches RustDedicated with server values from the dot-env file,
-including the server IP/ports, map, identity, hostname, player limit, tutorial
-setting, tags, save interval and WebRCON settings.
+It then launches RustDedicated with server values from the dot-env file, which
+includes the server IP/ports, map, identity, hostname, player limit, tutorial
+setting, tags, save interval and WebRCON settings. Among other possible and 
+potential [convar](https://wiki.facepunch.com/rust/Creating-a-server) (console variable) settings. 
 
-The supplied service unit also contains placeholder server description,
-image and URL values. Read the unit before using it on your own public server
-and change those values to suit your server.
+The supplied RUSTACS service unit also contains placeholders for server 
+description, image and URL values. Read the file before using it on your 
+own public server and change those values to suit your server.
 
-The unit is configured to restart RustDedicated on failure, with a delay between
-restart attempts. A deliberate service stop is still a deliberate stop.
+The service unit is configured to restart RustDedicated on failure, with 
+a delay between restart attempts. A deliberate service stop is still a 
+deliberate stop.
 
 ## Automation with cron
 
-The Bash tools don't require an interactive terminal, so the backup and logswap
-tools can be scheduled with `cron` once you've tested them manually and know
-the required permissions are in place.
+*RUSTACS was very much designed with automation in mind and is ultimately* 
+*`crontab` user-friendly and configurable.*
 
-For example, a backup job might be:
+The Bash tools don't require an interactive terminal. `rustserverbackup.sh` 
+and `rustserverlogswap.sh` tools can be scheduled with `cron` once you've 
+tested them manually and know the required permissions are in place.
+
+For working out any and all `cron` possibilities and settings, see the
+[crontab guru](https://crontab.guru/) website by Cronitor. Which is one of the best resources 
+for this on the Internet.
+
+For example, a backup `cron job` might be:
 
 ```cron
 0 4 * * * /home/rust/bin/rustserverbackup.sh
@@ -998,9 +1126,10 @@ A regular log-size check might be:
 */15 * * * * /home/rust/bin/rustserverlogswap.sh
 ```
 
-Those are examples, not prescribed schedules. Pick times that make sense for
-your server. In particular, remember that an active-server backup includes a
-30-minute player-warning countdown before shutdown.
+The above are examples, not prescribed schedules. Pick times that make sense
+for your server. In particular, remember that an active-server backup using 
+`rustserverbackup.sh` includes a 30-minute in-game player warning countdown 
+before shutdown.
 
 `rustacs` can also be called from cron for RustDedicated commands:
 
@@ -1010,7 +1139,7 @@ your server. In particular, remember that an active-server backup includes a
 
 Before relying on cron, run the exact command manually as the same account that
 will run the cron job. RUSTACS scripts use absolute PATHs in several places,
-but permissions and `sudo` rules still matter.
+but user/group permissions and `sudo` rules and policies still matter.
 
 ## Logs and backups
 
@@ -1020,10 +1149,11 @@ RUSTACS uses:
 ```text
 /home/rust/logs/                 RUSTACS and RustDedicated logs
 /home/rust/backups/              Rust state and archived server logs
-/home/rust/backups/worldbackups/ genesys dot-env backups
+/home/rust/backups/worldbackups/ rustservergenesys.sh dot-env backups
 ```
 
-Each Bash tool uses its own program name for its progress log:
+To ensure ease of identification and traceability during troubleshooting, 
+each log file dynamically inherits the `basename` of its parent script:
 
 ```text
 rustserverbackup.log
@@ -1032,11 +1162,13 @@ rustserverlogswap.log
 rustservermod.log
 ```
 
+
+
 Don't confuse those progress logs with the active RustDedicated server log.
 `rustserverlogswap.sh` manages the RustDedicated log; it doesn't rotate the
 RUSTACS tools' own progress logs.
 
-## Troubleshooting
+## Troubleshooting RUSTACS
 
 If `rustacs` says:
 
@@ -1044,22 +1176,23 @@ If `rustacs` says:
 Connection failed: Server is offline or RCON IP/port is misconfigured.
 ```
 
-first establish whether RustDedicated is actually running:
+First establish whether RustDedicated systemd service is actually running:
 
 ```bash
 rustacs server status
 ```
 
-If the service is active, check the RCON IP and port in the active dot-env file.
-For the underlying WebSocket error, repeat the command with `--verbose`:
+If the service is active, check the RCON IP and port in the active dot-env 
+file. For the underlying WebSocket error, repeat the command using the 
+`--verbose` argument:
 
 ```bash
 rustacs status --verbose
 ```
 
 If `rustacs` reports that the dot-env file can't be read, check that
-`/home/rust/.rustacs/.rustserver.env` exists and that the account running the
-command has permission to read it.
+`/home/rust/.rustacs/.rustserver.env` exists and that the user account 
+running the command has the correct permissions to read it.
 
 If a Bash tool behaves as though it's targeting the wrong server, check the
 active dot-env file before doing anything else:
@@ -1068,8 +1201,8 @@ active dot-env file before doing anything else:
 readlink -f /home/rust/.rustacs/.rustserver.env
 ```
 
-If `.rustserver.env` is a regular file rather than a symbolic link, inspect it
-directly instead.
+If `.rustserver.env` is a regular file rather than a symbolic link, inspect 
+it directly instead.
 
 If systemd doesn't see a newly installed or changed service unit, reload its
 unit files:

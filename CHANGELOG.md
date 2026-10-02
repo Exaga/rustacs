@@ -4,7 +4,7 @@ Development history on RUSTACS - Rust Administration & Control Service
 
 Notable changes in development are documented here.
 
-## v2.1.3 - 2026-10-02
+## v2.2.5 - 2026-10-02
 
 - Added multi-server functionality.
 
@@ -26,7 +26,7 @@ Notable changes in development are documented here.
 - Expanded command-line help and informational options.
 - Integrated `rustacs` with the wider RUSTACS toolset.
 
-## v1.0.0 - 2026-06-05
+## v1.0.1 - 2026-06-05
 
 - Initial `rustacs` release.
 - Added WebRCON command execution.

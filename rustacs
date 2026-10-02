@@ -6,11 +6,6 @@
 #
 # rustacs - WebRCON command-line tool for the (RustDedicated) WebSocket interface
 #
-# 2026-09-23 - v1.0.1   [prototype became working version]
-# 2026-09-23 - v1.0.2   [RCON passwd stored as dot-env variable]
-# 2026-09-30 - v1.1.0   [expanded command-line and server management functionality]
-# 2026-10-01 - v1.2.0   [RUSTACS command tool identity]
-#
 # Unlike other games, the Rust game server binary (RustDedicated) does not
 # listen to standard input (stdin) when running on Linux. rustacs passes
 # commands to RustDedicated through its WebRCON WebSocket interface.
@@ -78,7 +73,6 @@ except ImportError:
     websockets = None
 
 
-VERSION = "1.2.0"
 PROJECT_URL = "https://github.com/Exaga/rustacs"
 ENV_FILE_PATH = "/home/rust/.rustacs/.rustserver.env"
 
@@ -107,7 +101,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
 
 
 def print_help():
-    print(f"""rustacs v{VERSION} [Python 3]
+    print(f"""rustacs v{rustacs_version()} [Python 3]
 {DESCRIPTION}
 
 Usage:
@@ -134,7 +128,7 @@ Options:
 
 
 def print_version():
-    print(f"""rustacs v{VERSION} [Python 3]
+    print(f"""rustacs v{rustacs_version()} [Python 3]
 {DESCRIPTION}
 {PROJECT_URL}
 (c) 2026 penthux.net""")
@@ -180,6 +174,11 @@ def require_value(env, name):
         print(f"Error: {name} not found in {ENV_FILE_PATH}", file=sys.stderr)
         sys.exit(1)
     return value
+
+
+def rustacs_version():
+    env = read_dotenv(ENV_FILE_PATH)
+    return require_value(env, "RUSTACS_VERSION")
 
 
 def connection_error(exc, verbose):
@@ -249,7 +248,7 @@ async def send_command(command, verbose):
     }
 
     try:
-        async with websockets.connect(uri, open_timeout=5, close_timeout=1) as websocket:
+        async with websockets.connect(uri, open_timeout=8, close_timeout=1) as websocket:
             await websocket.send(json.dumps(payload))
             raw_response = await asyncio.wait_for(websocket.recv(), timeout=5)
             print_rcon_message(command, raw_response)

@@ -4,8 +4,6 @@
 #
 # Create a brand new Rust server game world map
 #
-# 2026-10-01 - v1.1.0   [release version]
-#
 # This script creates a new Rust server game world, generating a map based
 # on the seed specified in the dot-env file. It does not replace or delete
 # any existing Rust server files. It does NOT remove or overwrite player 

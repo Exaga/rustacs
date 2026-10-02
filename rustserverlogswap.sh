@@ -4,8 +4,6 @@
 #
 # Automated Rust server log file serialisation and backup sequencing
 #
-# 2026-09-23 - v1.0.1   [release version]
-#
 # This script takes the active log file from the active Rust server and
 # tarballs it into a backup directory with a timestamp in to the filename
 # for easy auditing and retention management.
