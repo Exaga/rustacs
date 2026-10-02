@@ -1,6 +1,6 @@
 # RUSTACS
 
-**RUSTACS** --- Rust Administration & Control System.
+**RUSTACS** - Rust Administration & Control System.
 
 RUSTACS is a collection of command-line tools, Bash scripts, a dot-env file 
 and a systemd service unit for administering Linux-hosted Rust servers. The 
