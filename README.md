@@ -349,7 +349,7 @@ value when locating the data it backs up.
 RUST_RCON_WEB=1
 RUST_RCON_IP=127.0.0.1
 RUST_RCON_PORT=28016
-RUST_RCON_PASSWORD=your-RCON-password
+RUST_RCON_PASSWORD=your-RCON-passwd
 ```
 
 `rustacs` reads the RCON IP, port and password from the dot-env file whenever it
@@ -969,10 +969,9 @@ It then launches RustDedicated with server values from the dot-env file,
 including the server IP/ports, map, identity, hostname, player limit, tutorial
 setting, tags, save interval and WebRCON settings.
 
-The supplied service unit also contains project-specific server description,
+The supplied service unit also contains placeholder server description,
 image and URL values. Read the unit before using it on your own public server
-and change those values to your own. Don't accidentally publish somebody
-else's server identity because you skipped reading the file.
+and change those values to suit your server.
 
 The unit is configured to restart RustDedicated on failure, with a delay between
 restart attempts. A deliberate service stop is still a deliberate stop.

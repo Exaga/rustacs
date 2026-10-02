@@ -30,7 +30,7 @@
 #
 # Python dependency:
 #
-#   python3 -m pip install websockets
+#   sudo apt install python3-websockets
 #
 ### USAGE:
 #
