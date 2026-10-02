@@ -89,7 +89,8 @@ sudo apt update
 sudo apt install bash python3 python3-websockets sudo curl unzip tar xz-utils
 ```
 
-Further package installation is explained throughout this document.
+For other Linux distributions, install the equivalent system packages to suit 
+the above.
 
 ## Download RUSTACS
 
