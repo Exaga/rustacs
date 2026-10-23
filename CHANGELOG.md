@@ -24,7 +24,7 @@ Notable changes in development are documented here.
 - Improved WebRCON connection handling.
 - Added formatted `serverinfo` output.
 - Expanded command-line help and informational options.
-- Integrated `rustacs` with the wider RUSTACS toolset.
+- Integrated `rustacs` into the RUSTACS toolset.
 
 ## v1.0.1 - 2026-06-05
 
