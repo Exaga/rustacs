@@ -1220,7 +1220,7 @@ to start.
 
 RUSTACS is released under the [MIT License](LICENSE).
 
-Copyright © 2026 Exaga - rust.penthux.net
+Copyright © 2026 Penthux.NET (rust.penthux.net)
 
 \# F3F0    
 \#EOF<*>    
