@@ -1224,4 +1224,4 @@ Copyright © 2026 Exaga - rust.penthux.net
 
 \# F3F0    
 \#EOF<*>    
-\# \14N4<3:
+\# 14N4<3:
