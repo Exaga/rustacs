@@ -42,7 +42,7 @@
 #
 ### MIT License:
 #
-# Copyright 2026 Exaga - penthux.net
+# Copyright © 2026 Penthux.NET (rust.penthux.net)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the “Software”), to deal
