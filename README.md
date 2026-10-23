@@ -1222,6 +1222,6 @@ RUSTACS is released under the [MIT License](LICENSE).
 
 Copyright © 2026 Exaga - rust.penthux.net
 
-# F3F0    
-#EOF<*>    
-# 14N4<3:*
+\# F3F0    
+\#EOF<*>    
+\# 14N4<3:*
